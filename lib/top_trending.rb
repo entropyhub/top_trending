@@ -1,6 +1,4 @@
+require 'redis'
+require "top_trending/top_trending"
 require "top_trending/version"
-
-module TopTrending
-  class Error < StandardError; end
-  # Your code goes here...
-end
+require "top_trending/client"

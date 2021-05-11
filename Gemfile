@@ -5,3 +5,6 @@ gemspec
 
 gem "rake", "~> 12.0"
 gem "minitest", "~> 5.0"
+gem "timecop"
+gem "awesome_print"
+gem "pry"

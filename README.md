@@ -1,14 +1,33 @@
-# TopTrending
+# Top Trending
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/top_trending`. To experiment with that code, run `bin/console` for an interactive prompt.
+Measures the top trending terms or events over a 24 hour period.
 
-TODO: Delete this and the text above, and describe your gem
+For example, a dictionary site might want to record the top trending words looked up by visitors. 
+
+![screenshot](https://github.com/entropyhub/top_trending/blob/master/trending_words.png)
+
+The implementation leverages a Redis backend to collate and expire data, which
+may avoid the heavy data processing involved in a more naive implementation.
+
+## Usage
+
+``` ruby
+    @client = TopTrending::Client.new(redis_client: Redis.new,
+                                      leaderboard_name: 'top_trending_words')
+
+    3.times { @client.bump_score('cat') }
+    2.times { @client.bump_score('banana') }
+    1.times { @client.bump_score('apple') }
+
+    @client.leaderboard
+    # => ['cat', 'banana', 'apple']
+```
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
-```ruby
+``` ruby
 gem 'top_trending'
 ```
 
@@ -20,11 +39,9 @@ Or install it yourself as:
 
     $ gem install top_trending
 
-## Usage
-
-TODO: Write usage instructions here
-
 ## Development
+
+To understand how this works, checkout [https://youtu.be/XqSK-4oEoAc](Redis Sorted Sets Explained).
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
