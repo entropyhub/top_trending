@@ -30,6 +30,21 @@ module TopTrending
       top(@number_of_items_in_leaderboard)
     end
 
+    def get_state
+      slices = last_keys(26).map do |slice|
+        {
+          key: slice,
+          scores: zrevrange(slice, 0, 10, with_scores: true)
+        }
+      end
+
+      {
+        current_key: current_key,
+        leaderboard: leaderboard,
+        slices: slices,
+      }
+    end
+
     private
 
     def top(n)
