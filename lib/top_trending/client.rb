@@ -1,9 +1,13 @@
 module TopTrending
   class Client < SimpleDelegator
-    def initialize(redis_client:, leaderboard_name:, hours_or_seconds: :hours)
+    def initialize(redis_client:,
+                   leaderboard_name:,
+                   hours_or_seconds: :hours,
+                   number_of_items_in_leaderboard: 20)
       super(redis_client)
       @redis = redis_client
       @leaderboard_name = leaderboard_name
+      @number_of_items_in_leaderboard = number_of_items_in_leaderboard
       @expiry_already_set = Set.new
       case hours_or_seconds
       when :hours # Record the "Top Trending" in the last 24 hour period
@@ -16,13 +20,14 @@ module TopTrending
     end
 
     def bump_score(entity)
+      return unless entity.is_a?(String) && !entity.empty?
       key = current_key
       zincrby(key, 1, entity)
       expire(key, expiry_time)
     end
 
     def leaderboard
-      top(10)
+      top(@number_of_items_in_leaderboard)
     end
 
     private
