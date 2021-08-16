@@ -3,8 +3,7 @@ require "test_helper"
 class TopTrendingTest < Minitest::Test
   def setup
     @client = TopTrending::Client.new(redis_client: Redis.new,
-                                      leaderboard_name: 'top_trending_words',
-                                      hours_or_seconds: :seconds)
+                                      leaderboard_name: 'top_trending_words')
   end
 
   def teardown
@@ -40,13 +39,14 @@ class TopTrendingTest < Minitest::Test
   end
 
   def test_expiry_of_old_time_slices
+    Timecop.travel(Time.local(2021, 1, 1, 0))
     10.times { @client.bump_score('zoo') }
 
-    sleep 1
+    Timecop.travel(Time.local(2021, 1, 1, 3))
 
-    10.times { @client.bump_score('yak') }
+    9.times { @client.bump_score('yak') }
 
-    sleep 1
+    Timecop.travel(Time.local(2021, 1, 1, 6))
 
     5.times { @client.bump_score('egg') }
     4.times { @client.bump_score('dog') }
@@ -54,27 +54,24 @@ class TopTrendingTest < Minitest::Test
     2.times { @client.bump_score('banana') }
     1.times { @client.bump_score('apple') }
 
-    sleep 8
+    Timecop.travel(Time.local(2021, 1, 1, 10))
 
-    assert_equal @client.leaderboard, ['zoo', 'yak', 'egg', 'dog', 'cat', 'banana', 'apple']
+    msg = "Counts correctly"
+    assert_equal @client.leaderboard, ['zoo', 'yak', 'egg', 'dog', 'cat', 'banana', 'apple'], msg
 
-    sleep 14
+    Timecop.travel(Time.local(2021, 1, 2, 3))
 
     msg = "Oldest slice should timeout"
     assert_equal @client.leaderboard, ['yak', 'egg', 'dog', 'cat', 'banana', 'apple'], msg
 
-    sleep 1
+    Timecop.travel(Time.local(2021, 1, 2, 4))
 
     msg = "Next oldest slice should timeout"
     assert_equal @client.leaderboard, ['egg', 'dog', 'cat', 'banana', 'apple'], msg
 
-    sleep 1
+    Timecop.travel(Time.local(2021, 1, 3, 0))
 
     msg = "All keys visible keys should have expired"
     assert_equal @client.leaderboard, [], msg
-
-    sleep 3
-    msg = "All keys should have expired, freeing up memory"
-    assert_equal @client.dbsize, 0, msg
   end
 end
