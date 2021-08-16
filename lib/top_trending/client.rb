@@ -2,7 +2,7 @@ module TopTrending
   class Client < SimpleDelegator
     def initialize(redis_client:,
                    leaderboard_name:,
-                   number_of_items_in_leaderboard: 10)
+                   number_of_items_in_leaderboard: 25)
       super(redis_client)
       @redis = redis_client
       @leaderboard_name = leaderboard_name
