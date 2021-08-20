@@ -2,7 +2,7 @@ module TopTrending
   class Client < SimpleDelegator
     def initialize(redis_client:,
                    leaderboard_name:,
-                   number_of_items_in_leaderboard: 25)
+                   number_of_items_in_leaderboard: 10)
       super(redis_client)
       @redis = redis_client
       @leaderboard_name = leaderboard_name
@@ -18,15 +18,23 @@ module TopTrending
       expire(key, expiry_time)
     end
 
+    def scores
+      totals_key = key('totals')
+      zunionstore(totals_key, last_24_keys)
+      zrevrange(totals_key, 0, -1, with_scores: true).map {
+        |word_score| [word_score.first, word_score.last.to_i]
+      }.to_h
+    end
+
     def leaderboard
       top(@number_of_items_in_leaderboard)
     end
 
     def get_state
-      slices = last_keys(26).map do |slice|
+      slices = last_24_keys.map do |slice|
         {
           key: slice,
-          scores: zrevrange(slice, 0, 10, with_scores: true)
+          scores: zrevrange(slice, 0, @number_of_items_in_leaderboard, with_scores: true)
         }
       end
 

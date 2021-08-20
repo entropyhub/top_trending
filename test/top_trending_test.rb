@@ -26,16 +26,17 @@ class TopTrendingTest < Minitest::Test
     2.times { @client.bump_score('banana') }
     1.times { @client.bump_score('apple') }
 
-    assert_equal @client.leaderboard, ['egg', 'dog', 'cat', 'banana', 'apple']
+    assert_equal ['egg', 'dog', 'cat', 'banana', 'apple'], @client.leaderboard
 
     5.times { @client.bump_score('apple') }
 
-    assert_equal @client.leaderboard, ['apple', 'egg', 'dog', 'cat', 'banana']
+    assert_equal ['apple', 'egg', 'dog', 'cat', 'banana'], @client.leaderboard
 
     9.times { @client.bump_score('cat') }
     9.times { @client.bump_score('banana') }
 
-    assert_equal @client.leaderboard, ['cat', 'banana', 'apple', 'egg', 'dog']
+    assert_equal ['cat', 'banana', 'apple', 'egg', 'dog'], @client.leaderboard
+    assert_equal({'cat' => 12, 'banana' => 11, 'apple' => 6, 'egg' => 5, 'dog' => 4 }, @client.scores)
   end
 
   def test_expiry_of_old_time_slices
